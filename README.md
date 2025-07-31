@@ -3,6 +3,22 @@
 A RESTful API built with **Express.js** and **MongoDB** that supports **JSON-LD formatted entities** such as Customers, Products, and Orders.
 
 
+## Set-up and run instructions
+1. Clone the repository
+- git clone https://github.com/pradeepkm21/express-jsonld-api.git
+- cd express-jsonld-api
+
+2. Install dependencies
+- npm install
+
+3. configure Envirement `.env`
+- MONGO_URI=mongodb://localhost:27017/shopDB
+- PORT=3000
+
+4. Run server
+- npm start
+
+
 ## Steps involve in this project
 
 ### Project Initialization
@@ -36,6 +52,32 @@ A RESTful API built with **Express.js** and **MongoDB** that supports **JSON-LD 
   - DB stores only neccessary data, avoid metadata
   - Return JSON-LD data as response
 - Endpoints are tested using sample data
+
+
+### MongoDB data structure examples
+- Customer document
+{
+  "_id": ObjectId("688af7cf55da7a2e00a48daf"),
+  "name": "MxWeb",
+  "email": "mxweb@google.com"
+}
+
+- Product document
+{
+  "_id": ObjectId("688af7cf55da7a2e00a48daf"),
+  "name" : "Data structure and Algorithm",
+  "category" : "Book",
+  "price" : 3000
+}
+
+- Order document
+{
+  "_id": ObjectId('688b060ab48e78b708ca8174'),
+  "customer_id": ObjectId('688af63ec4ee559f8f4b3ee7'),
+  "product_id": ObjectId('68889ca537c27f41139de67c'),
+  "quantity": 1,
+  "date": "28-07-2025"
+}
 
 
 ### JSON-LD formatted sample Data for endpoints
