@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const {getDB} = require("../config/db");
 
 exports.createCustomer = async (req, res)=>{
@@ -30,6 +31,34 @@ exports.createCustomer = async (req, res)=>{
     }
     catch(err){
         console.error("Error occured", err);
+        res.status(500).json({error : "Internal server error"});
+    }
+}
+
+exports.getCustomerById = async(req, res)=>{
+    try{
+        const db = getDB();
+        const {id} = req.params;
+
+        if(!id){
+            return res.status(400).json({error : "Valid ID is required"});
+        }
+
+        const customer = await db.collection("customers").findOne({_id : new ObjectId(id)});
+        if(!customer){
+            return res.status(404).json({error : "Customer not found"});
+        }
+
+        res.status(200).json({
+            "@context" : "https://schema.org",
+            "@type" : "Person",
+            "@id" : `${req.protocol}://${req.get("host")}/customers/${customer._id}`,
+            "name" : customer.name,
+            "email" : customer.email
+        });
+    }
+    catch(err){
+        console.error("Error occured", error);
         res.status(500).json({error : "Internal server error"});
     }
 }

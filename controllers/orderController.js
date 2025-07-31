@@ -58,3 +58,37 @@ exports.createOrder = async(req, res)=>{
         res.status(500).json({error : "Internal server error"});
     }
 }
+
+exports.getOrderById = async(req, res) => {
+    try{
+        const db = getDB();
+        const {id} = req.params;
+
+        if(!id){
+            return res.status(400).json({error : "Valid ID is required"});
+        }
+
+        const order = await db.collection("orders").findOne({_id : new ObjectId(id)});
+        if(!order){
+            return res.status(404).json({error : "Order not found"});
+        }
+
+        res.status(200).json({
+            "@context" : "https://schema.org",
+            "@type" : "Order",
+            "@id" : `${req.protocol}://${req.get("host")}/orders/${order._id}`,
+            "quantity" : order.quantity,
+            "date" : order.date,
+            "customer_id" : {
+                "@id" : `${req.protocol}://${req.get("host")}/customers/${order.customer_id}`
+            },
+            "product_id" : {
+                "@id" : `${req.protocol}://${req.get("host")}/products/${order.product_id}`
+            }
+        });
+    }
+    catch(err){
+        console.error("Error occured", err);
+        res.status(500).json({error : "Internal server error"});
+    }
+}
