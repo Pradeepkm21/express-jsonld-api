@@ -1,25 +1,15 @@
-const { MongoClient } = require('mongodb');
-require('dotenv').config();
+const mongoose = require('mongoose');
+const URI = process.env.MONGO_URI;
 
-const client = new MongoClient(process.env.MONGO_URI);
-let db;
-
-async function connectToDB(){
+const connectDB = async () => {
     try{
-        await client.connect();
-        db = client.db();
-        console.log("MongoDB connected successfully");
+        await mongoose.connect(URI);
+        console.log('MongoDB Connected Successfully!');
     }
-    catch(error){
-        console.error("DB connection failed: ", error);
+    catch(err){
+        console.error('MongoDB Connection Error!:', err);
+        process.exit(1);
     }
-}
+};
 
-function getDB() {
-  if (!db) {
-    throw new Error("DB not initialized. Call connectToDB() first.");
-  }
-  return db;
-}
-
-module.exports = { connectToDB, getDB };
+module.exports = connectDB;

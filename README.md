@@ -73,8 +73,8 @@ A RESTful API built with **Express.js** and **MongoDB** that supports **JSON-LD 
 - Order document
 {
   "_id": ObjectId('688b060ab48e78b708ca8174'),
-  "customer_id": ObjectId('688af63ec4ee559f8f4b3ee7'),
-  "product_id": ObjectId('68889ca537c27f41139de67c'),
+  "customerID": ObjectId('688af63ec4ee559f8f4b3ee7'),
+  "productID": ObjectId('68889ca537c27f41139de67c'),
   "quantity": 1,
   "date": "28-07-2025"
 }
@@ -106,10 +106,10 @@ A RESTful API built with **Express.js** and **MongoDB** that supports **JSON-LD 
     "@type": "Order",
     "date": "28-07-2025",
     "quantity": 3,
-    "customer_id": {
+    "customerID": {
       "@id": "http://localhost:3000/customers/688af7cf55da7a2e00a48daf"
     },
-    "product_id": {
+    "productID": {
       "@id": "http://localhost:3000/products/688af7cf55da7a2e00a48daf"
     }
 }

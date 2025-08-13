@@ -1,74 +1,74 @@
-const { ObjectId } = require("mongodb");
-const {getDB} = require("../config/db");
+const mongoose  = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId
+
+const customerModel = require("../models/customerModel");
+const orderModel = require("../models/orderModel");
+const productModel = require("../models/productModel");
 
 exports.createOrder = async(req, res)=>{
     try{
-        const db = getDB();
         const orderData = req.body;
 
-        if(orderData["@type"] != "Order"){
+        if(orderData["@type"] !== "Order"){
             return res.status(400).json("Invalid @type : expected 'Order'");
         }
 
-        // Validate presence of customer_id and product_id
-        if (!orderData["customer_id"] || !orderData["customer_id"]["@id"] || !orderData["product_id"] || !orderData["product_id"]["@id"]){
-            return res.status(400).json({ error: "customer_id and product_id are required" });
+        // Validate presence of customerID and productID
+        if (!orderData.customerID?.["@id"] || !orderData.productID?.["@id"]){
+            return res.status(400).json({ error: "customerID and productID are required" });
         }
 
-        let customerID, productID;
-        try {
-            customerID = new ObjectId(orderData["customer_id"]["@id"].split('/').pop());
-            productID = new ObjectId(orderData["product_id"]["@id"].split('/').pop());
-        }catch (err) {
-            return res.status(400).json({ error: "Invalid customer_id or product_id format" });
+        const customerId = orderData.customerID["@id"].split('/').pop();
+        const productId = orderData.productID["@id"].split('/').pop();
+
+        if (!ObjectId.isValid(customerId) || !ObjectId.isValid(productId)) {
+            return res.status(400).json({ error: "Invalid customerID or productID format" });
         }
 
-        const customer = await db.collection("customers").findOne({_id : customerID});
-        const product = await db.collection("products").findOne({_id : productID});
+        const customer = await customerModel.findById(customerId);
+        const product = await productModel.findById(productId);
 
         if(!customer || !product){
             return res.status(404).json({ error: "Referenced customer or product not found" })
         }
-
-        const result = await db.collection("orders").insertOne({
-            "customer_id" : customerID,
-            "product_id" : productID,
-            "quantity" : orderData["quantity"] || 1,
-            "date" : orderData["date"] || new Date()
+        
+        const order = await orderModel.create({
+            customerID : customerId,
+            productID : productId,
+            quantity : orderData.quantity || 1,
+            date : orderData.date ? new Date(orderData.date) : new Date(),
         });
 
-        const orderID = result.insertedId;
 
         res.status(201).json({
             "@context" : "http://schema.org",
             "@type" : "Order",
-            "@id" : `${req.protocol}://${req.get("host")}/orders/${orderID}`,
-            "customer_id" : {
-                "@id" : `${req.protocol}://${req.get("host")}/customers/${customerID}`
+            "@id" : `${req.protocol}://${req.get("host")}/orders/${order._id}`,
+            customerID : {
+                "@id" : `${req.protocol}://${req.get("host")}/customers/${customerId}`
             },
-            "product_id" : {
-                "@id" : `${req.protocol}://${req.get("host")}/products/${productID}`
+            productID : {
+                "@id" : `${req.protocol}://${req.get("host")}/products/${productId}`
             },
-            "quantity" : orderData["quantity"] || 1,
-            "date" : orderData["date"] || new Date()
+            quantity : order.quantity,
+            date : order.date,
         });
     }
     catch(err){
         console.error("Error occured", err);
         res.status(500).json({error : "Internal server error"});
     }
-}
+};
 
 exports.getOrderById = async(req, res) => {
     try{
-        const db = getDB();
         const {id} = req.params;
 
-        if(!id){
+        if(!id || !ObjectId.isValid(id)){
             return res.status(400).json({error : "Valid ID is required"});
         }
 
-        const order = await db.collection("orders").findOne({_id : new ObjectId(id)});
+        const order = await orderModel.findById(id);
         if(!order){
             return res.status(404).json({error : "Order not found"});
         }
@@ -77,14 +77,14 @@ exports.getOrderById = async(req, res) => {
             "@context" : "https://schema.org",
             "@type" : "Order",
             "@id" : `${req.protocol}://${req.get("host")}/orders/${order._id}`,
-            "quantity" : order.quantity,
-            "date" : order.date,
-            "customer_id" : {
-                "@id" : `${req.protocol}://${req.get("host")}/customers/${order.customer_id}`
+            customerID : {
+                "@id" : `${req.protocol}://${req.get("host")}/customers/${order.customerID}`
             },
-            "product_id" : {
-                "@id" : `${req.protocol}://${req.get("host")}/products/${order.product_id}`
-            }
+            productID : {
+                "@id" : `${req.protocol}://${req.get("host")}/products/${order.productID}`
+            },
+            quantity : order.quantity,
+            date : order.date,
         });
     }
     catch(err){

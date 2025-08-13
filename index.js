@@ -1,19 +1,19 @@
 const express = require("express")
 require("dotenv").config()
 
-const {connectToDB} = require("./config/db");
+const connectDB = require("./config/db");
 const customerRoute = require("./routes/customerRoutes");
 const productRoute = require("./routes/productRoutes");
 const orderRoute = require("./routes/orderRoutes");
 
 const app = express()
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 4000;
 
 //Middleware for parsing json data
 app.use(express.json())
 
 //connect to DB server
-connectToDB();
+connectDB();
 
 //Routes
 app.use("/", customerRoute);
